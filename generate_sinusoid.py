@@ -30,14 +30,15 @@ frequency = 440.0
 duration = 2.0 # seconds
 
 # 正弦波を生成する
-waveform = generate_sinusoid(sampling_rate, frequency, duration)
+waveform0 = generate_sinusoid(sampling_rate, frequency, duration)
+waveform1 = generate_sinusoid(sampling_rate, 550.0, duration)
 
 # 最大値を0.9にする
-waveform = waveform * 0.9
+waveform = waveform0 * 0.5 + waveform1 *0.5
 
 # 値の範囲を[-1.0 ~ +1.0] から [-32768 ~ +32767] へ変換する
 waveform = (waveform * 32768.0). astype('int16')
 
 # 音声ファイルとして出力する
-filename = 'sinuoid_test.wav'
+filename = 'sinuoid_test_440&550.wav'
 scipy.io.wavfile.write(filename , int(sampling_rate), waveform)
