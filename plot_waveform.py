@@ -3,7 +3,6 @@
 # サンプルソースコード
 #
 # 音声ファイルを読み込み，波形を図示する．
-#
 
 # ライブラリの読み込み
 import matplotlib.pyplot as plt
@@ -13,7 +12,7 @@ import librosa
 SR = 16000
 
 # 音声ファイルの読み込み
-x, _ = librosa.load('aiueo.wav', sr=SR)
+x, _ = librosa.load('rec/aiueo2.wav', sr=SR)
 
 # xに波形データが保存される
 # 第二戻り値はサンプリングレート（ここでは必要ないので _ としている）
@@ -35,6 +34,6 @@ plt.xlabel('Sampling point')					# x軸のラベルを設定
 plt.show()										# 表示
 
 # 画像ファイルに保存
-fig.savefig('plot-waveform.png')
+fig.savefig('aiueo2.png')
 
 

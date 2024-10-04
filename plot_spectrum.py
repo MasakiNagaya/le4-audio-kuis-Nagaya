@@ -13,12 +13,18 @@ import librosa
 # サンプリングレート
 SR = 16000
 
+name = "o1"
+
 # 音声ファイルの読み込み
-x, _ = librosa.load('a.wav', sr=SR)
+x, _ = librosa.load('rec/'+name+'.wav', sr=SR)
+
+print(len(x))
 
 # 高速フーリエ変換
 # np.fft.rfftを使用するとFFTの前半部分のみが得られる
 fft_spec = np.fft.rfft(x)
+
+print(len(fft_spec))
 
 # 複素スペクトルを対数振幅スペクトルに
 fft_log_abs_spec = np.log(np.abs(fft_spec))
@@ -45,7 +51,7 @@ plt.plot(x_data, fft_log_abs_spec)			# 描画
 plt.show()
 
 # 画像ファイルに保存
-fig.savefig('plot-spectrum-whole.png')
+fig.savefig('picture/plot-spectrum-whole_'+name+'.png')
 
 # 横軸を0~2000Hzに拡大
 # xlimで表示の領域を変えるだけ
@@ -59,4 +65,4 @@ plt.plot(x_data, fft_log_abs_spec)
 plt.show()
 
 # 画像ファイルに保存
-fig.savefig('plot-spectrum-2000.png')
+fig.savefig('picture/plot-spectrum-2000_'+name+'.png')
