@@ -13,7 +13,7 @@ import numpy as np
 SR = 16000
 
 # 音声ファイルの読み込み
-x, _ = librosa.load('rec/aiueo2.wav', sr=SR)
+x, _ = librosa.load('rec/aiueo_01_train.wav', sr=SR)
 
 # xに波形データが保存される
 # 第二戻り値はサンプリングレート（ここでは必要ないので _ としている）
@@ -37,6 +37,6 @@ plt.grid()
 plt.show()										# 表示
 
 # 画像ファイルに保存
-fig.savefig('picture/aiueo2.png')
+fig.savefig('picture/aiueo_01_train.png')
 
 
