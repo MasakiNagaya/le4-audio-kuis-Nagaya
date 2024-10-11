@@ -7,6 +7,7 @@
 # ライブラリの読み込み
 import matplotlib.pyplot as plt
 import librosa
+import numpy as np
 
 # サンプリングレート
 SR = 16000
@@ -29,11 +30,13 @@ print(x)
 fig = plt.figure(figsize=(10, 4))
 
 # 波形を描画
-plt.plot(x)										# 描画データを追加
-plt.xlabel('Sampling point')					# x軸のラベルを設定
+plt.plot(np.arange(len(x))/SR,x)				# 描画データを追加
+plt.xlabel('time(s)')					# x軸のラベルを設定
+plt.xticks(np.linspace(0,len(x)/SR,15))
+plt.grid()
 plt.show()										# 表示
 
 # 画像ファイルに保存
-fig.savefig('aiueo2.png')
+fig.savefig('picture/aiueo2.png')
 
 

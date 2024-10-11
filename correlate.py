@@ -17,17 +17,16 @@ def is_peak(a, index):
 	else: 
 		return False
 
-
 # サンプリングレート
 SR = 16000
 
 # 音声ファイルの読み込み
-x, _ = librosa.load('rec/aiueo2.wav', sr=SR)
+x, _ = librosa.load('rec/ex11.wav', sr=SR)
 
 # フレームサイズ
 size_frame = 4096		# 2のべき乗
 # シフトサイズ
-size_shift = 16000 / 1000	# 0.01 秒 (10 msec)
+size_shift = 16000 / 100	# 0.01 秒 (10 msec)
 # 基本周波数を保存するlist
 omega = []
 
@@ -71,9 +70,10 @@ fig = plt.figure()
 
 # 音量を描画
 plt.xlabel('time(s)')					# x軸のラベルを設定
-plt.ylabel('omega[Hz]')		# y軸のラベルを設定
+plt.ylabel('frequency[Hz]')		# y軸のラベルを設定
+# plt.ylim(0,500)
 plt.plot(np.linspace(0,(len(x)-size_frame)/16000, len(omega)), omega)
 plt.show()
 
 # 画像ファイルに保存
-fig.savefig('picture/plot-omega_ex8_aiueo2.png')
+fig.savefig('picture/plot-omega_ex11-all.png')

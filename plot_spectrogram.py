@@ -14,14 +14,14 @@ import librosa
 SR = 16000
 
 # 音声ファイルの読み込み
-x, _ = librosa.load('rec/aiueo2.wav', sr=SR)
+x, _ = librosa.load('rec/ex11.wav', sr=SR)
 
 #
 # 短時間フーリエ変換
 #
 
 # フレームサイズ
-size_frame = 512		# 2のべき乗
+size_frame = 4096		# 2のべき乗
 
 # フレームサイズに合わせてハミング窓を作成
 hamming_window = np.hamming(size_frame)
@@ -70,9 +70,10 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
 	# fft_log_abs_spec = fft_log_abs_spec[:size_target]
 
 	# 計算した対数振幅スペクトログラムを配列に保存
-	spectrogram.append(fft_log_abs_spec[0:32])
+	# spectrogram.append(fft_log_abs_spec)	#2049
+	spectrogram.append(fft_log_abs_spec[:256]) # /8 = 256
 
-
+print(len(fft_log_abs_spec))
 #
 # スペクトログラムを画像に表示・保存
 #
@@ -85,7 +86,7 @@ plt.xlabel('sample')					# x軸のラベルを設定
 plt.ylabel('frequency [Hz]')		# y軸のラベルを設定
 plt.imshow(
 	np.flipud(np.array(spectrogram).T),		# 画像とみなすために，データを転置して上下反転
-	extent=[0, len(x), 0, SR/16],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
+	extent=[0, len(x), 0, SR/(2*8)],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
 	aspect='auto',
 	interpolation='nearest'
 )
@@ -95,6 +96,6 @@ plt.show()
 # 縦軸の最大値はサンプリング周波数の半分 = 16000 / 2 = 8000 Hz となる
 
 # 画像ファイルに保存
-fig.savefig('picture/plot-spectogram-ex7_16-2.png')
+fig.savefig('picture/plot-spectogram-ex11.png')
 
 

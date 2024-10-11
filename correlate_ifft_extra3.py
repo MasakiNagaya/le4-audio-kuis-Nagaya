@@ -35,8 +35,8 @@ print('numpy correlate'+'{:.10f}'.format((end-start)/60)) # 87.97(秒→分に�
 
 #fft^2 ifft
 start = time.perf_counter() #計測開始
-fft_spec = np.fft.fft(x)
-selfcorr = np.fft.ifft(fft_spec ** 2)
+fft_spec = np.fft.rfft(x)
+selfcorr = np.fft.irfft(fft_spec ** 2)
 end = time.perf_counter() #計測終了
 # print(len(selfcorr))
 print('self correlate'+'{:.10f}'.format((end-start)/60)) # 87.97(秒→分に直し、小数点以下の桁数を指定して出力)
@@ -56,4 +56,4 @@ plt.plot(selfcorr, alpha=0.7)
 plt.show()
 
 # 画像ファイルに保存
-fig.savefig('picture/plot-corr-extra3.png')
+fig.savefig('picture/plot-corr-extra3-aiueo2-r.png')
