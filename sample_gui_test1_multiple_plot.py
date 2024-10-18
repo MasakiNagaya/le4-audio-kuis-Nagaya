@@ -15,7 +15,7 @@ SR = 16000					# サンプリングレート
 size_shift = 16000 / 100	# シフトサイズ = 0.001 秒 (10 msec)
 
 # 音声ファイルを読み込む
-x, _ = librosa.load('aiueo.wav', sr=SR)
+x, _ = librosa.load('rec/aiueo1.wav', sr=SR)
 
 # ファイルサイズ（秒）
 duration = len(x) / SR
@@ -63,5 +63,5 @@ x_data = np.linspace(0, duration, len(volume))
 ax2.plot(x_data, volume, c='y')
 
 plt.show()
-fig.savefig('plot-spectogram-volume.png')
+fig.savefig('picture/plot-spectogram-volume_aiueo1.png')
 
