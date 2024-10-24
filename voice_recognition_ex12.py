@@ -11,12 +11,12 @@ def cepstrum(amplitude_spectrum):
 	log_spectrum = np.log(amplitude_spectrum)
 	# 2. 対数振幅スペクトルをフーリエ変換する．
 	cepstrum = np.fft.rfft(log_spectrum)
-	return cepstrum[0:13]
+	return cepstrum[0:20]
 
 # サンプリングレート
 SR = 16000
 # フレームサイズ
-size_frame = 4096		# 2のべき乗
+size_frame = 2048		# 2のべき乗
 # フレームサイズに合わせてハミング窓を作成
 hamming_window = np.hamming(size_frame)
 # シフトサイズ
@@ -73,7 +73,6 @@ def model(cepstrum_spec_list):
 	# print(log_L_list)
 	return np.argmax(log_L_list)
 
-model_size_n = 20
 
 # 音声ファイルの読み込み
 # x, _ = librosa.load('rec/a_train.wav', sr=SR)
@@ -103,7 +102,7 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
 	spectrogram.append(fft_log_abs_spec[:256]) # /8 = 256
 
 	r = counter-1
-	l = np.max([r-20, 0])
+	l = np.max([r-30, 0])
 	aiueo = model(cepstrum_spec_list[l:r])
 	aiueo_list.append(aiueo)
 
@@ -127,7 +126,7 @@ plt.imshow(
 	interpolation='nearest'
 )
 aiueo_list = np.array(aiueo_list) * 100 + 100
-plt.plot(np.linspace(0,(len(x)-size_frame)/SR,len(aiueo_list)), aiueo_list, color="red")
+plt.plot(np.linspace(0, (len(x)-size_frame)/SR, len(aiueo_list)), aiueo_list, color="red")
 plt.show()
 
 # 【補足】
@@ -137,17 +136,17 @@ plt.show()
 fig.savefig('picture/plot-spectogram-ex12test.png')
 
 
-# 画像として保存するための設定
-fig = plt.figure()
+# # 画像として保存するための設定
+# fig = plt.figure()
 
-# スペクトログラムを描画
-plt.xlabel('sample')					# x軸のラベルを設定
-plt.ylabel('frequency [Hz]')		# y軸のラベルを設定
-plt.plot(aiueo_list)
-plt.show()
+# # スペクトログラムを描画
+# plt.xlabel('sample')					# x軸のラベルを設定
+# plt.ylabel('frequency [Hz]')		# y軸のラベルを設定
+# plt.plot(aiueo_list)
+# plt.show()
 
-# 【補足】
-# 縦軸の最大値はサンプリング周波数の半分 = 16000 / 2 = 8000 Hz となる
+# # 【補足】
+# # 縦軸の最大値はサンプリング周波数の半分 = 16000 / 2 = 8000 Hz となる
 
-# 画像ファイルに保存
-fig.savefig('picture/plot-aiueo-ex12.png')
+# # 画像ファイルに保存
+# fig.savefig('picture/plot-aiueo-ex12.png')

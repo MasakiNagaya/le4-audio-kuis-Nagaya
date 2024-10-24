@@ -26,10 +26,10 @@ def generate_sinusoid(sampling_rate, frequency, duration):
 SR = 16000
 
 # 音声ファイルの読み込み
-x, _ = librosa.load('a.wav', sr=SR)
+x, _ = librosa.load('rec/a_train.wav', sr=SR)
 
 # 生成する正弦波の周波数（Hz）
-frequency = 200.0
+frequency = 100.0
 
 # 生成する正弦波の時間的長さ
 duration = len(x)
@@ -47,5 +47,5 @@ x_changed = x * sin_wave
 x_changed = (x_changed * 32768.0). astype('int16')
 
 # 音声ファイルとして出力する
-filename = 'voice_change.wav'
+filename = 'rec/voice_change_100.wav'
 scipy.io.wavfile.write(filename , int(SR), x_changed)
