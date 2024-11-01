@@ -151,7 +151,7 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
         # スペクトログラム
         # fft_spec = np.fft.rfft(x_frame * hamming_window)
         fft_log_abs_spec = np.log(np.abs(fft_spec))
-        spectrogram.append(fft_log_abs_spec[:256]) # /8 = 256
+        spectrogram.append(fft_log_abs_spec[:128]) # 2048/8 = 256
         
         spectrogram_all.append(fft_log_abs_spec)
 
@@ -159,10 +159,11 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
         vol = 20 * np.log10(np.mean(x_frame ** 2))
         volume.append(vol)
 
+print(len(fft_log_abs_spec))
 
 # Tkinterを初期化
 root = tkinter.Tk()
-root.wm_title("EXP4-AUDIO-SAMPLE")
+root.wm_title("EXP4-AUDIO-MASAKI NAGAYA-ASSIGNMENT1")
 
 # Tkinterのウィジェットを階層的に管理するためにFrameを使用
 # frame1 ... スペクトログラムを表示
@@ -180,13 +181,14 @@ ax.set_xlabel('sec')
 ax.set_ylabel('frequency [Hz]')
 ax.imshow(
 	np.flipud(np.array(spectrogram).T),
-	extent=[0, duration, 0, 8000/4],
+	extent=[0, duration, 0, 8000/8],
 	aspect='auto',
 	interpolation='nearest'
 )
 ax.plot(np.linspace(0,(len(x)-size_frame)/16000, len(fundamental_frequency)), fundamental_frequency, color='red')
 aiueo_list = np.array(aiueo_list) * 100 + 100
-ax.plot(np.linspace(0, len(x)/SR, len(aiueo_list)), aiueo_list, color="white")
+ax.plot(np.linspace(0, len(x)/SR-0.8, len(aiueo_list[80:])), aiueo_list[80:], color="white")
+print( len(aiueo_list))
 # 続いて右側のy軸を追加して，音量を重ねて描画
 axtw = ax.twinx()
 axtw.set_ylabel('volume [dB]')

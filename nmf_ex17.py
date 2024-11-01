@@ -9,6 +9,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import librosa
+import sounddevice as sd
+import scipy.io.wavfile
 
 name = "nmf_piano_sample"
 
@@ -51,7 +53,7 @@ for i in range(1000):
     U = U * (Y.T @ H).T / (H.T @ (H @ U))
     NMF = H @ U
     D = np.mean(np.square(Y-NMF))
-    print(D)
+    # print(D)
     if np.abs(D) < 0.01:
         break
 
@@ -62,42 +64,58 @@ for i in range(k):
     HH = np.zeros_like(H)
     HH.T[i] = H.T[i]
     spectrograms.append(HH @ U)
+    # print("a")
+    # スペクトルから音声信号に戻す
+    signal = []
+    signal.append(librosa.istft(spectrograms[i]))
+    signal = np.array(signal)
+    # # 音声ファイルとして保存
+    print(signal)
+    print(np.max(signal))
+    print(len(signal[0]))
+    scipy.io.wavfile.write("rec/kadai1"+str(i)+".wav" , SR, signal[i])
+    sd.play(signal[i]*100,SR)
 
-#
-# スペクトログラムを画像に表示・保存
-#
+print(np.shape(H))
+print(np.shape(U))
 
-# 画像として保存するための設定
-fig = plt.figure()
 
-# スペクトログラムを描画
-plt.xlabel('frequency(Hz)')					# x軸のラベルを設定
-plt.ylabel('num')		# y軸のラベルを設定
-plt.imshow(
-	np.flipud(H.T),		# 画像とみなすために，データを転置して上下反転
-	extent=[0, SR/2, 0,k],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
-	aspect='auto',
-	interpolation='nearest'
-)
-plt.show()
 
-# 画像ファイルに保存
-fig.savefig('picture/' + name + 'H_ex17_k=' + str(k) + '.png')
+# #
+# # スペクトログラムを画像に表示・保存
+# #
 
-# 画像として保存するための設定
-fig = plt.figure()
+# # 画像として保存するための設定
+# fig = plt.figure()
 
-# スペクトログラムを描画
-plt.xlabel('time(s)')					# x軸のラベルを設定
-plt.ylabel('num')		# y軸のラベルを設定
-plt.imshow(
-	np.flipud(U),		# 画像とみなすために，データを転置して上下反転
-	extent=[0, len(x)/SR, 0,k],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
-	aspect='auto',
-	interpolation='nearest'
-)
-plt.show()
+# # スペクトログラムを描画
+# plt.xlabel('frequency(Hz)')					# x軸のラベルを設定
+# plt.ylabel('num')		# y軸のラベルを設定
+# plt.imshow(
+# 	np.flipud(H.T),		# 画像とみなすために，データを転置して上下反転
+# 	extent=[0, SR/2, 0,k],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
+# 	aspect='auto',
+# 	interpolation='nearest'
+# )
+# plt.show()
 
-# 画像ファイルに保存
-fig.savefig('picture/' + name + 'U_ex17_k=' + str(k) + '.png')
+# # 画像ファイルに保存
+# fig.savefig('picture/' + name + 'H_ex17_k=' + str(k) + '.png')
+
+# # 画像として保存するための設定
+# fig = plt.figure()
+
+# # スペクトログラムを描画
+# plt.xlabel('time(s)')					# x軸のラベルを設定
+# plt.ylabel('num')		# y軸のラベルを設定
+# plt.imshow(
+# 	np.flipud(U),		# 画像とみなすために，データを転置して上下反転
+# 	extent=[0, len(x)/SR, 0,k],			# (横軸の原点の値，横軸の最大値，縦軸の原点の値，縦軸の最大値)
+# 	aspect='auto',
+# 	interpolation='nearest'
+# )
+# plt.show()
+
+# # 画像ファイルに保存
+# fig.savefig('picture/' + name + 'U_ex17_k=' + str(k) + '.png')
 
