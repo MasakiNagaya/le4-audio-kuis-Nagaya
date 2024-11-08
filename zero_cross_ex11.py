@@ -63,6 +63,8 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
 	# 自己相関
 	autocorr = np.correlate(x_frame, x_frame, 'full')
 	autocorr = autocorr [len (autocorr ) // 2 : ]
+	# fft_spec = np.fft.rfft(x_frame)
+	# autocorr = np.fft.irfft(fft_spec ** 2)
 	peakindices = [i for i in range (len (autocorr)-1) if is_peak (autocorr, i)]
 	peakindices = [i for i in peakindices if i != 0]
 	if peakindices!=[]:
@@ -73,7 +75,7 @@ for i in np.arange(0, len(x)-size_frame, size_shift):
 		zero_cross_rate = zero_cross(x_frame) / (size_frame / SR)
 		zero_cross_list.append(zero_cross_rate)
 
-		if zero_cross_rate > (1/tau)*6 and zero_cross_rate < (1/tau)*11:
+		if zero_cross_rate > (1/tau)*1 and zero_cross_rate < (1/tau)*11:
 			if (1/tau)<400:fundamental_frequency.append(1/tau)
 		else:
 			fundamental_frequency.append(0)

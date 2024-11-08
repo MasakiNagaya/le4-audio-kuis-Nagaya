@@ -298,8 +298,8 @@ class AudioPlayer:
         self.handle2 = self.handle_canvas.create_oval(self.handle2_x - 10, 40, self.handle2_x + 10, 60, fill="red")
 
         # ラベルで範囲を表示
-        self.label = tk.Label(self.main_frame, text="Min: 0 s, Max: "+ str(len(self.current_audio_data_changed)/self.audio_sr)+ " s")
-        self.label.pack()
+        self.label_handle = tk.Label(self.main_frame, text="Min: 0 s, Max: "+ str(len(self.current_audio_data_changed)/self.audio_sr)+ " s")
+        self.label_handle.pack()
 
         # ハンドルにバインディング
         self.handle_canvas.tag_bind(self.handle1, "<B1-Motion>", self.move_handle1)
@@ -326,7 +326,7 @@ class AudioPlayer:
         # ラベルを更新
         min_value = min_value * self.duration / self.max_value
         max_value = max_value * self.duration / self.max_value
-        self.label.config(text=f"Min: {min_value:.2f} s, Max: {max_value:.2f} s")
+        self.label_handle.config(text=f"Min: {min_value:.2f} s, Max: {max_value:.2f} s")
         self.min_index = max(0,int(min_value * len(self.current_audio_data_changed) / self.duration))
         self.max_index = min(int(max_value * len(self.current_audio_data_changed) / self.duration), len(self.current_audio_data_changed))
 
@@ -813,7 +813,7 @@ class AudioPlayer:
             self.temporary_file = temp_file.name
         scipy.io.wavfile.write(self.temporary_file, int(self.audio_sr), self.current_audio_data_changed)
 
-        self.effector_now_label = self.effector_now_label + "Compressor:LPF cut off freq="+str(fc)+"\n "
+        self.effector_now_label = self.effector_now_label + "LPF: cut off freq="+str(fc)+"\n "
 
 
     def start_effector(self):
