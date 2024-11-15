@@ -24,6 +24,7 @@ from matplotlib.colors import Normalize
 import tkinter
 from matplotlib.backends.backend_tkagg import (
 	FigureCanvasTkAgg, NavigationToolbar2Tk)
+import math
 
 # mp3ファイルを読み込んで再生
 from pydub import AudioSegment
@@ -56,6 +57,9 @@ def zero_cross(waveform):
 		):
 			zc += 1
 	return zc
+# ノートナンバーから周波数へ
+def nn2hz(notenum):
+	return 440.0 * (2.0 ** ((notenum - 69) / 12.0))
 
 #
 # (1) GUI / グラフ描画の処理
@@ -70,10 +74,10 @@ def zero_cross(waveform):
 # 再描画はmatplotlib animationが行う
 def animate(frame_index):
 
-	# ax1_sub.set_array(spectrogram_data)
+	ax1_sub.set_array(spectrogram_data)
 
 	# この上の処理を下記のようにすれば楽曲のスペクトログラムが表示される
-	ax1_sub.set_array(spectrogram_data_music)
+	# ax1_sub.set_array(spectrogram_data_music)
 	ax1_sub_f.set_data(time_x_data, f_frequency_data)
 	ax1_sub_f_music.set_data(time_x_data, f_frequency_data_music)
 
@@ -86,10 +90,15 @@ def animate(frame_index):
 
 # GUIで表示するための処理（Tkinter）
 root = tkinter.Tk()
-root.wm_title("EXP4-AUDIO-SAMPLE")
+root.wm_title("EXP4-AUDIO-NAGAYA")
 
 main_frame = tkinter.Frame(root)
 main_frame.pack(side="left")
+
+title_music = tkinter.Label(main_frame, text="曲名", font=("", 25))
+title_music.pack(pady=20)  # 上下に余白を設定して配置
+lyrics_music = tkinter.Label(main_frame, text="歌詞", font=("", 25))
+lyrics_music.pack(pady=20)  # 上下に余白を設定して配置
 
 # スペクトログラムを描画
 fig, ax1 = plt.subplots(1, 1)
@@ -131,7 +140,7 @@ ax1_sub = ax1.pcolormesh(
 )
 
 ax1_sub_f, = ax1.plot(time_x_data, f_frequency_data, c='white')
-ax1_sub_f_music, = ax1.plot(time_x_data, f_frequency_data_music, c='red')
+ax1_sub_f_music, = ax1.plot(time_x_data, f_frequency_data_music, c='red', lw=5)
 
 # 音量を表示するために反転した軸を作成
 ax2 = ax1.twinx()
@@ -175,6 +184,9 @@ text.set('0.0')
 label = tkinter.Label(master=main_frame, textvariable=text, font=("", 30))
 label.pack()
 
+score_label = tkinter.Label(master=main_frame, text="score", font=("", 30))
+score_label.pack()
+
 # 終了ボタンが押されたときに呼び出される関数
 # ここではGUIを終了する
 def _quit():
@@ -182,8 +194,10 @@ def _quit():
 	root.destroy()
 
 # 終了ボタンを作成
-button = tkinter.Button(master=main_frame, text="終了", command=_quit, font=("", 30))
-button.pack()
+bottun_frame = tkinter.Frame(main_frame)
+bottun_frame.pack(side="bottom")
+button = tkinter.Button(master=bottun_frame, text="アプリの終了", command=_quit, font=("", 30))
+button.pack(side="right")
 
 #
 # (2) マイク入力のための処理
@@ -245,7 +259,7 @@ def input_callback(in_data, frame_count, time_info, status_flags):
 			if zero_cross_rate > (1/tau)*0.5 and zero_cross_rate < (1/tau)*11:
 				if (1/tau)<1000:
 					f_frequency = 1/tau
-			# f_frequency = 1/tau
+			f_frequency = 1/tau #音声だけなら消す
 		f_frequency_data = np.roll(f_frequency_data, -1)
 		# print(f_frequency, zero_cross_rate)
 		# print(v_level)
@@ -273,19 +287,101 @@ stream = p.open(
 #
 
 # mp3ファイル名
-# ここは各自の音源ファイルに合わせて変更すること
-filename = 'rec/mp3/hotaru_no_hikari.mp3'
-filename = 'rec/shs-test-midi.wav'
-# filename = 'rec/mp3/aiueo_01_train.mp3'
-
-#
-# 【注意】なるべく1チャネルの音声を利用すること
-# ステレオ（2チャネル）の場合は SoX などでモノラルに変換できる
-# sox stereo.wav -c 1 mono.wav
-#
-
+filename = 'rec/mp3/nhk_hotaru.mp3'
 # pydubを使用して音楽ファイルを読み込む
 audio_data = AudioSegment.from_mp3(filename)
+# txtファイル名
+note_filename = 'data/hotaru_note.txt'
+note_data = np.loadtxt(note_filename)
+fhz_data = nn2hz(note_data - 7)
+# txtファイル名
+txt_filename = 'data/hotaru_text.txt'
+txt_data = np.genfromtxt(txt_filename, dtype=str, delimiter='\n', encoding='utf-8')
+# title
+title_music.config(text="蛍の光")
+# scale
+scale = 37.5
+lyric_scale = 8 * 4
+
+def select_song():
+	global filename, audio_data, fhz_data, txt_data, scale, lyric_scale
+	if selected_song.get() == song_list[0]:
+		# mp3ファイル名
+		filename = 'rec/mp3/nhk_hotaru.mp3'
+		# pydubを使用して音楽ファイルを読み込む
+		audio_data = AudioSegment.from_mp3(filename)
+		# txtファイル名
+		note_filename = 'data/hotaru_note.txt'
+		note_data = np.loadtxt(note_filename)
+		fhz_data = nn2hz(note_data)
+		# txtファイル名
+		txt_filename = 'data/hotaru_text.txt'
+		txt_data = np.genfromtxt(txt_filename, dtype=str, delimiter='\n', encoding='utf-8')
+		# title
+		title_music.config(text="蛍の光")
+		# scale
+		scale = 37.7
+		lyric_scale = 8 * 4
+	elif selected_song.get() == song_list[1]:
+		# mp3ファイル名
+		filename = 'rec/mp3/nhk_akatommbo.mp3'
+		# pydubを使用して音楽ファイルを読み込む
+		audio_data = AudioSegment.from_mp3(filename)
+		# txtファイル名
+		note_filename = 'data/akatommbo_note.txt'
+		note_data = np.loadtxt(note_filename)
+		fhz_data = nn2hz(note_data)
+		# txtファイル名
+		txt_filename = 'data/akatommbo_text.txt'
+		txt_data = np.genfromtxt(txt_filename, dtype=str, delimiter='\n', encoding='utf-8')
+		# title
+		title_music.config(text="赤とんぼ")
+		# scale
+		scale = 41
+		lyric_scale = 6
+	elif selected_song.get() == song_list[2]:
+		# mp3ファイル名
+		filename = 'rec/mp3/furusato.mp3'
+		# pydubを使用して音楽ファイルを読み込む
+		audio_data = AudioSegment.from_mp3(filename)
+		# txtファイル名
+		note_filename = 'data/furusato_note.txt'
+		note_data = np.loadtxt(note_filename)
+		fhz_data = nn2hz(note_data)
+		# txtファイル名
+		txt_filename = 'data/furusato_text.txt'
+		txt_data = np.genfromtxt(txt_filename, dtype=str, delimiter='\n', encoding='utf-8')
+		# title
+		title_music.config(text="ふるさと")
+		# scale
+		scale = 31.25
+		lyric_scale = 6 * 4
+
+# ラジオボタンで曲を選択
+song_list = ["蛍の光", "赤とんぼ", "ふるさと"]
+selected_song = tkinter.StringVar(value=song_list[0])
+radio_frame = tkinter.Frame(root)
+radio_frame.pack(pady=10, side="right")
+for song in song_list:
+	radio = tkinter.Radiobutton(
+		radio_frame, text=song, variable=selected_song,
+		value=song, font=("", 25)
+	)
+	radio.pack(anchor="w")
+button_song = tkinter.Button(master=radio_frame, text="曲の決定", command=select_song, font=("", 30))
+button_song.pack()
+
+cheet_flag = False
+def cheet():
+	global cheet_flag
+	cheet_flag = not cheet_flag
+	if cheet_flag:
+		button_cheet.config(text="接待モード")
+	else:
+		button_cheet.config(text="通常モード")
+
+button_cheet = tkinter.Button(master=radio_frame, text="通常モード", command=cheet, font=("", 30))
+button_cheet.pack()
 
 # 音声ファイルの再生にはpyaudioを使用
 # ここではpyaudioの再生ストリームを作成
@@ -327,78 +423,85 @@ def play_music():
 		if is_gui_running == False:
 			break
 
-		# pyaudioの再生ストリームに切り出した音楽データを流し込む
-		# 再生が完了するまで処理はここでブロックされる
-		stream_play.write(chunk._data)
-		
-		# 現在の再生位置を計算（単位は秒）
-		now_playing_sec = (idx * size_frame_music) / 1000.
-		
-		idx += 1
+		if is_paused:
+			time.sleep(0.01)
+		else:
 
-		#
-		# 【補足】
-		# 楽曲のスペクトログラムを計算する場合には下記のように楽曲のデータを受け取る
-		# ただし，音声データの値は -1.0~1.0 ではなく，16bit の整数値であるので正規化を施している
-		# また十分なサイズの音声データを確保してからfftを実行すること
-		# 楽曲が44.1kHzの場合，44100 / (1000/10) のサイズのデータとなる
-		# 以下では処理のみを行い，表示はしない．表示をするには animate 関数の中身を変更すること 
-		
-		# データの取得
-		data_music = np.array(chunk.get_array_of_samples())
-		
-		# 正規化
-		data_music = data_music / np.iinfo(np.int32).max	
-
-		#
-		# 以下はマイク入力のときと同様
-		#
-
-		# 現在のフレームとこれまでに入力されたフレームを連結
-		x_stacked_data_music = np.concatenate([x_stacked_data_music, data_music])
-
-		# フレームサイズ分のデータがあれば処理を行う
-		if len(x_stacked_data_music) >= FRAME_SIZE:
+			# pyaudioの再生ストリームに切り出した音楽データを流し込む
+			# 再生が完了するまで処理はここでブロックされる
+			stream_play.write(chunk._data)
 			
-			# フレームサイズからはみ出した過去のデータは捨てる
-			x_stacked_data_music = x_stacked_data_music[len(x_stacked_data_music)-FRAME_SIZE:]
+			# 現在の再生位置を計算（単位は秒）
+			now_playing_sec = (idx * size_frame_music) / 1000.
+			
+			idx += 1
 
-			# スペクトルを計算
-			fft_spec = np.fft.rfft(x_stacked_data_music * hamming_window)
-			fft_log_abs_spec = np.log10(np.abs(fft_spec) + EPSILON)[:-1]
+			#
+			# 【補足】
+			# 楽曲のスペクトログラムを計算する場合には下記のように楽曲のデータを受け取る
+			# ただし，音声データの値は -1.0~1.0 ではなく，16bit の整数値であるので正規化を施している
+			# また十分なサイズの音声データを確保してからfftを実行すること
+			# 楽曲が44.1kHzの場合，44100 / (1000/10) のサイズのデータとなる
+			# 以下では処理のみを行い，表示はしない．表示をするには animate 関数の中身を変更すること 
+			
+			# データの取得
+			data_music = np.array(chunk.get_array_of_samples())
+			
+			# 正規化
+			data_music = data_music / np.iinfo(np.int32).max	
 
-			# ２次元配列上で列方向（時間軸方向）に１つずらし（戻し）
-			# 最後の列（＝最後の時刻のスペクトルがあった位置）に最新のスペクトルデータを挿入
-			spectrogram_data_music = np.roll(spectrogram_data_music, -1, axis=1)
-			spectrogram_data_music[:, -1] = fft_log_abs_spec
+			#
+			# 以下はマイク入力のときと同様
+			#
 
-			# 音声の基本周波数
-			f_frequency = 0
-			autocorr = np.correlate(x_stacked_data_music, x_stacked_data_music, 'full')
-			autocorr = autocorr [len (autocorr ) // 2 : ]
-			peakindices = [i for i in range (len (autocorr)-1) if is_peak (autocorr, i)]
-			peakindices = [i for i in peakindices if i != 0]
-			if peakindices!=[]:
-				max_peak_index = max(peakindices , key=lambda index: autocorr [index])
-				tau = max_peak_index/SAMPLING_RATE
-				# zero_cross
-				zero_cross_rate = zero_cross(x_stacked_data_music) / (FRAME_SIZE/SAMPLING_RATE)
-				if zero_cross_rate > (1/tau)*3 and zero_cross_rate < (1/tau)*11:
-					if (1/tau)<400:
-						f_frequency = 1/tau
-				# f_frequency = 1/tau
-			f_frequency_data_music = np.roll(f_frequency_data_music, -1)
-			# print(f_frequency, zero_cross_rate)
-			# print(v_level)
-			f_frequency_data_music[-1] = f_frequency
+			# 現在のフレームとこれまでに入力されたフレームを連結
+			x_stacked_data_music = np.concatenate([x_stacked_data_music, data_music])
 
+			# フレームサイズ分のデータがあれば処理を行う
+			if len(x_stacked_data_music) >= FRAME_SIZE:
+				
+				# フレームサイズからはみ出した過去のデータは捨てる
+				x_stacked_data_music = x_stacked_data_music[len(x_stacked_data_music)-FRAME_SIZE:]
+
+				# スペクトルを計算
+				fft_spec = np.fft.rfft(x_stacked_data_music * hamming_window)
+				fft_log_abs_spec = np.log10(np.abs(fft_spec) + EPSILON)[:-1]
+
+				# ２次元配列上で列方向（時間軸方向）に１つずらし（戻し）
+				# 最後の列（＝最後の時刻のスペクトルがあった位置）に最新のスペクトルデータを挿入
+				spectrogram_data_music = np.roll(spectrogram_data_music, -1, axis=1)
+				spectrogram_data_music[:, -1] = fft_log_abs_spec
+
+				# 音声の基本周波数
+				index = int(min(idx/scale,len(fhz_data)-1))
+				f_frequency_data_music = np.roll(f_frequency_data_music, -1)
+				f_frequency_data_music[-1] = fhz_data[index]
+
+				# lyrics
+				index = int(min(idx/(scale*lyric_scale) ,len(txt_data)-1))
+				lyrics_music.config(text=txt_data[index])
+	
+score = 0
+full_score = 0
 # 再生時間の表示を随時更新する関数
 def update_gui_text():
-	global is_gui_running, now_playing_sec, text
+	global is_gui_running, now_playing_sec, text, is_paused, score, full_score
+	score = 0
+	full_score = 0
 	while True:
-		# GUIが表示されていれば再生位置（秒）をテキストとしてGUI上に表示
-		if is_gui_running:
-			text.set('%.3f' % now_playing_sec)
+		if not is_paused:
+			# GUIが表示されていれば再生位置（秒）をテキストとしてGUI上に表示
+			if is_gui_running:
+				text.set('%.3f' % now_playing_sec)
+				# score
+				if f_frequency_data_music[-1] != 0 and f_frequency_data[-1] != 0:
+					full_score += 1
+					if np.abs(f_frequency_data_music[-1] - f_frequency_data[-1]) < 10 or np.abs(f_frequency_data_music[-1]/2 - f_frequency_data[-1]) < 10 or np.abs(f_frequency_data_music[-1]/4 - f_frequency_data[-1]) < 10:
+						if cheet_flag:
+							score += 10
+						else:
+							score += 1
+						score_label.config(text="score: " + str(score) + "/" + str(full_score) + " => " + str(int(100 * score/full_score)) + "点")
 		# 0.01秒ごとに更新
 		time.sleep(0.01)
 
@@ -416,21 +519,75 @@ t_update_gui.setDaemon(True)	# GUIが消されたときにこの別スレッド�
 #
 # (4) 全体の処理を実行
 #
+START = True
+STOP = False
+ss_flag = False
+is_paused = False
+def _start():
+	global is_gui_running, t_play_music, t_update_gui, p_play, stream_play, ss_flag, score, full_score
 
-# GUIの開始フラグをTrueに
-is_gui_running = True
+	if ss_flag == START:
+		return
+	
+	ss_flag = START
+	score = 0
+	full_score = 0
 
-# 上記で設定したスレッドを開始（直前のフラグを立ててから）
-t_play_music.start()
-t_update_gui.start()
+	# GUIの開始フラグをTrueに
+	is_gui_running = True
+
+	# 音声ファイルの再生にはpyaudioを使用
+	# ここではpyaudioの再生ストリームを作成
+	p_play = pyaudio.PyAudio()
+	stream_play = p_play.open(
+		format = p.get_format_from_width(audio_data.sample_width),	# ストリームを読み書きするときのデータ型
+		channels = audio_data.channels,								# チャネル数
+		rate = audio_data.frame_rate,								# サンプリングレート
+		output = True												# 出力モードに設定
+	)
+
+	# 新しいスレッドを作成して開始
+	t_play_music = threading.Thread(target=play_music)
+	t_play_music.setDaemon(True)
+	t_update_gui = threading.Thread(target=update_gui_text)
+	t_update_gui.setDaemon(True)
+
+	# 上記で設定したスレッドを開始（直前のフラグを立ててから）
+	t_play_music.start()
+	t_update_gui.start()
+
+def _pause():
+	global is_gui_running, is_paused
+	# 一時停止/再開を切り替え
+	if is_gui_running:
+		is_paused = not is_paused
+		if is_paused:
+			button_pause.config(text="再開")
+		else:
+			button_pause.config(text="停止")
+
+def _stop():
+	global is_gui_running, ss_flag, stream_play, p_play
+
+	if ss_flag == STOP:
+		return
+
+	ss_flag = STOP
+
+	# GUIの開始フラグをFalseに = 音楽再生スレッドのループを終了
+	is_gui_running = False
+
+	# 終了処理
+	stream_play.stop_stream()
+	stream_play.close()
+	p_play.terminate()
+
+button_start = tkinter.Button(master=bottun_frame, text="音楽開始", command=_start, font=("", 30))
+button_start.pack(side="left")
+button_pause = tkinter.Button(master=bottun_frame, text="ポーズ", command=_pause, font=("", 30))
+button_pause.pack(side="left")
+button_stop = tkinter.Button(master=bottun_frame, text="音楽停止", command=_stop, font=("", 30))
+button_stop.pack(side="left")
 
 # GUIを開始，GUIが表示されている間は処理はここでストップ
 tkinter.mainloop()
-
-# GUIの開始フラグをFalseに = 音楽再生スレッドのループを終了
-is_gui_running = False
-
-# 終了処理
-stream_play.stop_stream()
-stream_play.close()
-p_play.terminate()
